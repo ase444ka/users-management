@@ -3,7 +3,7 @@ export function addUserToLocalStorage(body) {
 
   keys.sort((a, b) => a - b)
 
-  const lastIndex = keys.pop()
+  const lastIndex = keys.pop() || 0
 
   const key = (+lastIndex + 1).toString()
   const value = JSON.stringify(body)
