@@ -23,14 +23,11 @@
               v-on="on"
               @click="goToEdit"
             >
-              <v-icon dark>
-                mdi-message-arrow-left-outline
-              </v-icon>
+              <v-icon dark> mdi-message-arrow-left-outline </v-icon>
             </v-btn>
           </template>
           <span>Назад к редактированию</span>
         </v-tooltip>
-
       </v-card-title>
 
       <v-card-text outlined tile class="border-top pt-8" ref="cardContent">
@@ -47,6 +44,7 @@
           <v-row>
             <v-col cols="12" sm="6">
               <v-text-field
+                clearable
                 v-model="formData.lastName"
                 label="Фамилия"
                 :rules="[rules.required, rules.counter]"
@@ -55,6 +53,7 @@
             </v-col>
             <v-col cols="12" sm="6">
               <v-text-field
+                clearable
                 v-model="formData.firstName"
                 label="Имя"
                 :rules="[rules.required, rules.counter]"
@@ -65,6 +64,7 @@
           <v-row>
             <v-col cols="12">
               <v-text-field
+                clearable
                 v-model="formData.patronymicName"
                 label="Отчество"
                 :rules="[rules.required, rules.counter]"
@@ -75,6 +75,7 @@
           <v-row>
             <v-col cols="12" sm="6">
               <v-text-field
+                clearable
                 v-model="formData.phone"
                 label="Телефон"
                 v-mask="'+7 (###) ### ## ##'"
@@ -83,6 +84,7 @@
             </v-col>
             <v-col cols="12" sm="6">
               <v-text-field
+                clearable
                 v-model="formData.email"
                 label="Email"
                 :rules="[rules.required, rules.counter, rules.email]"
@@ -208,7 +210,6 @@ export default {
     showAvatar() {
       return this.formData.fileSrc && !this.image
     },
-
   },
 
   methods: {
@@ -261,6 +262,8 @@ export default {
       })
     },
     cancel() {
+      this.image = false
+      this.formData = {}
       this.$emit('cancel')
     },
     save() {
@@ -280,12 +283,11 @@ export default {
         this.otherValidations.push(this.rules.email(value.email))
       },
     },
-    user: {
-      deep: true,
-      immediate: true,
-      handler(value) {
-        this.formData = _cloneDeep(value)
-      },
+
+    dialog(value) {
+      if (value) {
+        this.formData = _cloneDeep(this.user)
+      }
     },
   },
 }
