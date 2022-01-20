@@ -80,9 +80,6 @@ export default {
   components: { DumpDialog, UserCardDialog },
 
   async created() {
-    if (!this.loggedIn) {
-      this.$router.push('/login')
-    }
     await this.getUsers()
     this.debouncedFilterUsers = _debounce(this.filterUsers, 200)
   },

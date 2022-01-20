@@ -84,7 +84,6 @@ export default {
     async login() {
       this.errorFlag = false
       this.loading = true
-
       const body = {
         username: this.username,
         password: this.password,
@@ -92,9 +91,7 @@ export default {
 
       try {
         const result = await this.$store.dispatch('login', body)
-        if (result) {
-          await this.$router.push('/')
-        } else {
+        if (!result) {
           this.errorFlag = true
         }
       } catch (e) {

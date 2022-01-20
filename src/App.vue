@@ -1,19 +1,6 @@
 <template>
   <v-app id="inspire">
-    <v-app-bar app>
-      <v-container class="py-0 fill-height">
-        <v-avatar color="primary" size="36">
-          <img alt="Users logo" src="./assets/logo.png" />
-        </v-avatar>
-        <v-toolbar-title class="ml-15"
-          >Система управления пользователями</v-toolbar-title
-        >
-        <v-spacer></v-spacer>
-        <portal-target name="addUser"> </portal-target>
-
-        <v-btn>Выйти</v-btn>
-      </v-container>
-    </v-app-bar>
+    <AppBar />
 
     <v-main>
       <v-container>
@@ -24,8 +11,26 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import AppBar from '@/components/AppBar'
 export default {
   name: 'App',
+  components: { AppBar },
+  computed: {
+    ...mapState(['loggedIn']),
+  },
+  watch: {
+    loggedIn: {
+      immediate: true,
+      handler(value) {
+        if (!value) {
+          this.$router.push('/login')
+        } else {
+          this.$router.push('/')
+        }
+      },
+    },
+  },
 }
 </script>
 
