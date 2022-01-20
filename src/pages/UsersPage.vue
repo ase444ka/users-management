@@ -1,6 +1,12 @@
 <template>
   <v-row>
-    <UserCardDialog :dialog="userCardDialog" @cancel="closeUserCardDialog" />
+    <UserCardDialog
+      :dialog="userCardDialog"
+      :user="editedUser"
+      :isNewUser="isNewUser"
+      @cancel="closeUserCardDialog"
+      @save="saveUser"
+    />
     <portal to="addUser">
       <v-btn class="mr-15" @click="addUser">Добавить пользователя</v-btn>
     </portal>
@@ -17,36 +23,36 @@
         <v-checkbox @change="toggleSelectAll"></v-checkbox>
       </v-card>
       <v-card>
-        <v-list-item-group v-model="selectedItem" color="primary" multiple>
-          <template v-for="n in 6">
-            <v-list-item :key="n">
-              <template v-slot:default="{ active }">
-                <v-list-item-avatar
-                  color="grey darken-1"
-                  class="pointer"
-                  @click="editUser"
-                >
-                  <img alt="Users logo" :src="require('@/assets/user.jpg')" />
-                </v-list-item-avatar>
+        <v-list-item-group v-model="selectedUsers" color="primary" multiple>
+          <v-list-item
+            v-for="user in formattedUsers"
+            :key="user.id"
+            class="mdi-border-bottom"
+          >
+            <template v-slot:default="{ active }">
+              <v-list-item-avatar
+                color="grey darken-1"
+                class="pointer"
+                @click="editUser"
+              >
+                <img alt="Users logo" :src="require('@/assets/user.jpg')" />
+              </v-list-item-avatar>
 
-                <v-list-item-content>
-                  <v-list-item-title class="pointer" @click="editUser"
-                    >Истомина Ася Николаевна</v-list-item-title
-                  >
+              <v-list-item-content>
+                <v-list-item-title class="pointer" @click="editUser">{{
+                  user.fullName
+                }}</v-list-item-title>
 
-                  <v-list-item-subtitle class="pointer" @click="editUser">
-                    istomina.asia@yandex.ru
-                  </v-list-item-subtitle>
-                </v-list-item-content>
+                <v-list-item-subtitle class="pointer" @click="editUser">
+                  {{ user.email }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
 
-                <v-list-item-action>
-                  <v-checkbox :input-value="active"></v-checkbox>
-                </v-list-item-action>
-              </template>
-            </v-list-item>
-
-            <v-divider v-if="n !== 6" :key="`divider-${n}`" inset></v-divider>
-          </template>
+              <v-list-item-action>
+                <v-checkbox :input-value="active"></v-checkbox>
+              </v-list-item-action>
+            </template>
+          </v-list-item>
         </v-list-item-group>
       </v-card>
     </v-col>
@@ -54,41 +60,82 @@
 </template>
 
 <script>
-/*import { usersApi } from '@/api'*/
+import { usersApi } from '@/api'
 import UserCardDialog from '@/components/UserCardDialog'
 export default {
   name: 'UsersPage',
 
   components: { UserCardDialog },
 
+  async created() {
+    await this.getUsers()
+  },
+
   data() {
     return {
-      selectedItem: [],
+      users: [],
+      selectedUsers: [],
       userCardDialog: false,
+      editedUser: {},
     }
   },
 
   computed: {
     deleteButtonDisabled() {
-      return !this.selectedItem.length
+      return !this.selectedUsers.length
     },
 
     editButtonDisabled() {
-      return this.selectedItem.length !== 1
+      return this.selectedUsers.length !== 1
+    },
+
+    isNewUser() {
+      return !Object.keys(this.editedUser).length
+    },
+
+    formattedUsers() {
+      return this.users.map((user) => ({
+        ...user,
+        fullName: `${user.lastName} ${user.firstName} ${user.patronymicName}`,
+      }))
     },
   },
 
   methods: {
+    async getUsers() {
+      try {
+        this.users = await usersApi.getUsers()
+      } catch (e) {
+        this.$toastr('error', 'ошибка загрузки пользователей')
+      } finally {
+        console.log('finally')
+      }
+    },
+
     editUser() {
       console.log('edit')
     },
     toggleSelectAll(event) {
-      this.selectedItem = event ? [0, 1, 2, 3, 4, 5] : []
+      this.selectedUsers = event
+        ? Array.from({ length: this.formattedUsers.length }, (v, i) => i)
+        : []
     },
     closeUserCardDialog() {
       this.userCardDialog = false
     },
+    async saveUser(event) {
+      try {
+        this.users = await usersApi.addUser(event)
+        this.$toastr('success', 'пользователь успешно добавлен')
+      } catch (e) {
+        this.$toastr('error', 'ошибка добавления пользователя')
+        console.log(e)
+      } finally {
+        console.log('finally')
+      }
+    },
     addUser() {
+      this.editedUser = {}
       this.userCardDialog = true
     },
   },

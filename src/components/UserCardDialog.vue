@@ -1,9 +1,9 @@
 <template>
   <v-dialog :value="dialog" max-width="900" @click:outside="cancel">
     <v-card>
-      <v-card-title class="headline accent--text pb-4"
-        >Добавление пользователя</v-card-title
-      >
+      <v-card-title class="headline accent--text pb-4">{{
+        userCardTitle
+      }}</v-card-title>
 
       <v-card-text outlined tile class="border-top pt-8">
         <v-row>
@@ -56,6 +56,7 @@
             <v-file-input
               v-model="formData.photo"
               label="Фотография"
+              accept="image/*"
               :rules="[rules.required]"
             />
           </v-col>
@@ -69,7 +70,7 @@
           :loading="loading"
           color="success"
           text
-          @click="cancel"
+          @click="save"
           :disabled="!allFieldsValid"
         >
           Сохранить
@@ -82,11 +83,14 @@
 </template>
 
 <script>
+import _cloneDeep from 'lodash/cloneDeep'
 export default {
   name: 'UserCard',
 
   props: {
     dialog: Boolean,
+    user: Object,
+    isNewUser: Boolean,
   },
 
   data() {
@@ -135,11 +139,20 @@ export default {
       })
       return allExists && allValid
     },
+
+    userCardTitle() {
+      return this.isNewUser
+        ? 'Добавление пользователя'
+        : 'Редактирование пользователя'
+    },
   },
 
   methods: {
     cancel() {
       this.$emit('cancel')
+    },
+    save() {
+      this.$emit('save', this.formData)
     },
   },
 
@@ -153,6 +166,12 @@ export default {
         this.otherValidations.push(this.rules.counter(value.patronymicName))
         this.otherValidations.push(this.rules.counter(value.email))
         this.otherValidations.push(this.rules.email(value.email))
+      },
+    },
+    user: {
+      deep: true,
+      handler(value) {
+        this.formData = _cloneDeep(value)
       },
     },
   },
