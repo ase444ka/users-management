@@ -1,83 +1,119 @@
 <template>
   <v-dialog :value="dialog" max-width="900" @click:outside="cancel">
     <v-card>
-      <v-card-title class="headline accent--text pb-4">{{
-        userCardTitle
-      }}</v-card-title>
-
-      <v-card-text outlined tile class="border-top pt-8">
-        <v-row>
-          <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="formData.lastName"
-              label="Фамилия"
-              :rules="[rules.required, rules.counter]"
-              counter
-            />
-          </v-col>
-          <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="formData.firstName"
-              label="Имя"
-              :rules="[rules.required, rules.counter]"
-              counter
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12">
-            <v-text-field
-              v-model="formData.patronymicName"
-              label="Отчество"
-              :rules="[rules.required, rules.counter]"
-              counter
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="formData.phone"
-              label="Телефон"
-              v-mask="'+7 (###) ### ## ##'"
-              :rules="[rules.required, rules.phone]"
-            />
-          </v-col>
-          <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="formData.email"
-              label="Email"
-              :rules="[rules.required, rules.counter, rules.email]"
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <v-file-input
-              v-model="photo"
-              label="Фотография"
-              :disabled="!!formData.fileName"
-              accept="image/*"
-              :rules="[rules.required]"
-              @change="setFile"
-            />
-          </v-col>
-          <v-col cols="12" class="py-0">
-            <v-chip
-              v-if="formData.fileName"
-              class="ma-2"
-              close
-              color="success"
-              text-color="white"
-              @click:close.stop="deleteFile"
+      <v-card-title class="headline accent--text pb-4">
+        <span>{{ userCardTitle }}</span>
+        <v-spacer></v-spacer>
+        <v-avatar color="primary" size="70" v-if="showAvatar">
+          <img
+            alt="avatar"
+            :src="formData.fileSrc"
+            class="pointer"
+            @click="showImage"
+          />
+        </v-avatar>
+        <v-tooltip v-if="image" bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              fab
+              dark
+              large
+              v-bind="attrs"
+              v-on="on"
+              @click="goToEdit"
             >
-              {{ formData.fileName }}
-            </v-chip>
-          </v-col>
-        </v-row>
-        <v-row v-if="showImage">
-          <img :src="formData.fileSrc" alt="avatar"/>
-        </v-row>
+              <v-icon dark>
+                mdi-message-arrow-left-outline
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Назад к редактированию</span>
+        </v-tooltip>
+
+      </v-card-title>
+
+      <v-card-text outlined tile class="border-top pt-8" ref="cardContent">
+        <template v-if="image">
+          <img
+            v-if="formData.fileSrc"
+            alt="avatar"
+            :src="formData.fileSrc"
+            class="avatar"
+            ref="userImage"
+          />
+        </template>
+        <template v-else>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model="formData.lastName"
+                label="Фамилия"
+                :rules="[rules.required, rules.counter]"
+                counter
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model="formData.firstName"
+                label="Имя"
+                :rules="[rules.required, rules.counter]"
+                counter
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12">
+              <v-text-field
+                v-model="formData.patronymicName"
+                label="Отчество"
+                :rules="[rules.required, rules.counter]"
+                counter
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model="formData.phone"
+                label="Телефон"
+                v-mask="'+7 (###) ### ## ##'"
+                :rules="[rules.required, rules.phone]"
+              />
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-text-field
+                v-model="formData.email"
+                label="Email"
+                :rules="[rules.required, rules.counter, rules.email]"
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-file-input
+                v-model="photo"
+                label="Фотография"
+                :disabled="!!formData.fileName"
+                accept="image/*"
+                :rules="[rules.required]"
+                @change="setFile"
+              />
+            </v-col>
+            <v-col cols="12" class="py-0">
+              <v-chip
+                v-if="formData.fileName"
+                class="ma-2"
+                close
+                color="success"
+                text-color="white"
+                @click:close="deleteFile"
+              >
+                {{ formData.fileName }}
+              </v-chip>
+            </v-col>
+          </v-row>
+        </template>
       </v-card-text>
 
       <v-card-actions class="px-6">
@@ -127,7 +163,8 @@ export default {
       },
       photo: null,
       otherValidations: [],
-      showImage: false,
+      image: false,
+      arrow: false,
       //валидации
       rules: {
         required: (value) => !!value || 'Обязательное поле',
@@ -167,9 +204,17 @@ export default {
         ? 'Добавление пользователя'
         : 'Редактирование пользователя'
     },
+
+    showAvatar() {
+      return this.formData.fileSrc && !this.image
+    },
+
   },
 
   methods: {
+    goToEdit() {
+      this.image = false
+    },
     setFile(event) {
       console.log(event)
       if (event.size > MB) {
@@ -195,8 +240,25 @@ export default {
       this.formData.fileName = null
       this.photo = null
     },
-    showFile() {
-      this.showImage = true
+    showImage() {
+      if (this.image) return
+      let containerWidth = this.$refs.cardContent.clientWidth
+      let containerHeight = this.$refs.cardContent.clientHeight
+      this.image = true
+      this.$nextTick(() => {
+        let imageWith = this.$refs.userImage.clientWidth
+        let imageHeight = this.$refs.userImage.clientHeight
+        const proportion = imageWith / imageHeight
+        imageWith = containerWidth - 50
+        this.$refs.userImage.style.width = imageWith + 'px'
+        imageHeight = this.$refs.userImage.offsetHeight
+        if (imageHeight > containerHeight - 50) {
+          imageHeight = containerHeight - 50
+          imageWith = imageHeight * proportion
+          this.$refs.userImage.style.width = imageWith + 'px'
+          this.$refs.userImage.style.height = imageHeight + 'px'
+        }
+      })
     },
     cancel() {
       this.$emit('cancel')
@@ -233,5 +295,18 @@ export default {
 .border-top {
   border: 0 !important;
   border-top: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+.pointer {
+  cursor: pointer;
+}
+.avatar {
+  cursor: pointer;
+}
+
+.arrow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 30%;
 }
 </style>
