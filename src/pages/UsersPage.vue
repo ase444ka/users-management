@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row v-resize="onResize">
     <UserCardDialog
       :dialog="userCardDialog"
       :user="editedUser"
@@ -14,23 +14,37 @@
       @cancel="cancelDeletingUsers"
     />
     <portal to="addUser">
-      <v-btn class="mr-15" @click="addUser">Добавить пользователя</v-btn>
+      <v-btn
+        class="mr-5"
+        @click="addUser"
+        :icon="isSmall"
+        title="Добавить пользователя"
+      >
+        {{ buttonText }}
+        <v-icon v-if="isSmall">mdi-account-plus</v-icon>
+      </v-btn>
     </portal>
     <v-col>
-      <v-card class="d-flex mt-10 pa-2" flat v-if="usersAdded">
-        <v-btn
-          class="mr-4 mt-4"
-          :disabled="deleteButtonDisabled"
-          @click="proposeToDelete"
-          >Удалить</v-btn
-        >
-        <v-btn
-          class="mr-4 mt-4"
-          :disabled="editButtonDisabled"
-          @click="editUser"
-          >Редактировать</v-btn
-        >
-        <v-text-field label="Поиск..." v-model="search" />
+      <v-card
+        class="d-flex mt-10 pa-2 align-end align-sm-start"
+        flat
+        v-if="usersAdded"
+      >
+        <div class="d-flex flex-column flex-sm-row">
+          <v-btn
+            class="mr-4 mt-4"
+            :disabled="deleteButtonDisabled"
+            @click="proposeToDelete"
+            >Удалить
+          </v-btn>
+          <v-btn
+            class="mr-4 mt-4"
+            :disabled="editButtonDisabled"
+            @click="editUser"
+            >Редактировать
+          </v-btn>
+          <v-text-field label="Поиск..." v-model="search" />
+        </div>
         <v-spacer></v-spacer>
         <v-checkbox @change="toggleSelectAll"></v-checkbox>
       </v-card>
@@ -86,6 +100,10 @@ export default {
     this.debouncedFilterUsers = _debounce(this.filterUsers, 200)
   },
 
+  updated() {
+    this.isSmall = document.documentElement.offsetWidth < 900
+  },
+
   data() {
     return {
       users: [],
@@ -94,11 +112,16 @@ export default {
       editedUser: {},
       deleteUsersDialog: false,
       search: '',
+      isSmall: null,
     }
   },
 
   computed: {
     ...mapState(['loggedIn']),
+
+    buttonText() {
+      return this.isSmall ? '' : 'Добавить пользователя'
+    },
 
     usersAdded() {
       return this.users?.length || this.search
@@ -141,6 +164,9 @@ export default {
   },
 
   methods: {
+    onResize() {
+      this.isSmall = window.innerWidth < 900
+    },
     async getUsers() {
       try {
         this.users = await usersApi.getUsers()
