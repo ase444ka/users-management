@@ -7,18 +7,30 @@
       @cancel="closeUserCardDialog"
       @save="saveUser"
     />
+    <DumpDialog
+      :dialog="deleteUsersDialog"
+      :message="deleteUsersMessage"
+      @confirm="deleteUsers"
+      @cancel="cancelDeletingUsers"
+    />
     <portal to="addUser">
       <v-btn class="mr-15" @click="addUser">Добавить пользователя</v-btn>
     </portal>
     <v-col>
       <v-card class="d-flex mt-10 pa-2 light-blue lighten-5" flat>
-        <v-btn class="mr-4 mt-4" :disabled="deleteButtonDisabled"
+        <v-btn
+          class="mr-4 mt-4"
+          :disabled="deleteButtonDisabled"
+          @click="proposeToDelete"
           >Удалить</v-btn
         >
-        <v-btn class="mr-4 mt-4" :disabled="editButtonDisabled"
+        <v-btn
+          class="mr-4 mt-4"
+          :disabled="editButtonDisabled"
+          @click="editUser"
           >Редактировать</v-btn
         >
-        <v-text-field label="Поиск..." />
+        <v-text-field label="Поиск..." v-model="search" />
         <v-spacer></v-spacer>
         <v-checkbox @change="toggleSelectAll"></v-checkbox>
       </v-card>
@@ -60,15 +72,18 @@
 </template>
 
 <script>
+import _debounce from 'lodash.debounce'
 import { usersApi } from '@/api'
 import UserCardDialog from '@/components/UserCardDialog'
+import DumpDialog from '@/components/DumpDialog'
 export default {
   name: 'UsersPage',
 
-  components: { UserCardDialog },
+  components: { DumpDialog, UserCardDialog },
 
   async created() {
     await this.getUsers()
+    this.debouncedFilterUsers = _debounce(this.filterUsers, 200)
   },
 
   data() {
@@ -77,6 +92,8 @@ export default {
       selectedUsers: [],
       userCardDialog: false,
       editedUser: {},
+      deleteUsersDialog: false,
+      search: '',
     }
   },
 
@@ -94,10 +111,20 @@ export default {
     },
 
     formattedUsers() {
-      return this.users.map((user) => ({
+      return this.users?.map((user) => ({
         ...user,
         fullName: `${user.lastName} ${user.firstName} ${user.patronymicName}`,
       }))
+    },
+
+    allUsersSelected() {
+      return this.selectedUsers?.length === this.users?.length
+    },
+
+    deleteUsersMessage() {
+      return this.allUsersSelected
+        ? 'Удалить всех пользователей?'
+        : 'Удалить выбранных пользователей?'
     },
   },
 
@@ -109,15 +136,44 @@ export default {
         this.$toastr('error', 'ошибка загрузки пользователей')
       } finally {
         console.log('finally')
+        this.selectedUsers = []
       }
     },
 
+    proposeToDelete() {
+      this.deleteUsersDialog = true
+    },
+
+    async deleteUsers() {
+      this.deleteUsersDialog = false
+      if (this.allUsersSelected) {
+        await usersApi.deleteUsers()
+      } else {
+        let deletingIds = []
+        this.users.forEach((user, index) => {
+          if (this.selectedUsers?.includes(index)) {
+            deletingIds.push(user.id)
+          }
+        })
+        deletingIds.forEach(async (id) => {
+          await usersApi.deleteUser(id)
+        })
+      }
+      await this.getUsers()
+    },
+
+    cancelDeletingUsers() {
+      this.deleteUsersDialog = false
+    },
+
     editUser() {
-      console.log('edit')
+      const index = this.selectedUsers[0]
+      this.editedUser = this.users[index]
+      this.userCardDialog = true
     },
     toggleSelectAll(event) {
       this.selectedUsers = event
-        ? Array.from({ length: this.formattedUsers.length }, (v, i) => i)
+        ? Array.from({ length: this.formattedUsers?.length }, (v, i) => i)
         : []
     },
     closeUserCardDialog() {
@@ -125,24 +181,40 @@ export default {
     },
     async saveUser(event) {
       try {
-        this.users = await usersApi.addUser(event)
-        this.$toastr('success', 'пользователь успешно добавлен')
+        this.users = event.id
+          ? await usersApi.updateUser(event)
+          : await usersApi.addUser(event)
+        this.$toastr('success', 'пользователь успешно сохранен')
       } catch (e) {
-        this.$toastr('error', 'ошибка добавления пользователя')
+        this.$toastr('error', 'ошибка сохранения пользователя')
         console.log(e)
       } finally {
-        console.log('finally')
+        this.closeUserCardDialog()
+        await this.getUsers()
       }
     },
     addUser() {
       this.editedUser = {}
       this.userCardDialog = true
     },
+
+    async filterUsers(value) {
+      await this.getUsers()
+      if (value) {
+        this.users = this.users.filter((user) => {
+          const checkString = `${user.lastName} ${user.firstName} ${user.patronymicName} ${user.email} ${user.phone}`
+          return checkString.includes(value)
+        })
+      }
+    },
   },
 
   watch: {
     selectedItem(value) {
       console.log(value)
+    },
+    async search(value) {
+      await this.debouncedFilterUsers(value)
     },
   },
 }
