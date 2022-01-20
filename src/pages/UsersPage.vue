@@ -17,7 +17,7 @@
       <v-btn class="mr-15" @click="addUser">Добавить пользователя</v-btn>
     </portal>
     <v-col>
-      <v-card class="d-flex mt-10 pa-2 light-blue lighten-5" flat>
+      <v-card class="d-flex mt-10 pa-2" flat v-if="usersAdded">
         <v-btn
           class="mr-4 mt-4"
           :disabled="deleteButtonDisabled"
@@ -34,7 +34,8 @@
         <v-spacer></v-spacer>
         <v-checkbox @change="toggleSelectAll"></v-checkbox>
       </v-card>
-      <v-card>
+
+      <v-card v-if="users && users.length">
         <v-list-item-group v-model="selectedUsers" color="primary" multiple>
           <v-list-item
             v-for="user in formattedUsers"
@@ -63,6 +64,7 @@
           </v-list-item>
         </v-list-item-group>
       </v-card>
+      <p v-else>{{ noDataText }}</p>
     </v-col>
   </v-row>
 </template>
@@ -98,6 +100,10 @@ export default {
   computed: {
     ...mapState(['loggedIn']),
 
+    usersAdded() {
+      return this.users?.length || this.search
+    },
+
     deleteButtonDisabled() {
       return !this.selectedUsers.length
     },
@@ -126,6 +132,12 @@ export default {
         ? 'Удалить всех пользователей?'
         : 'Удалить выбранных пользователей?'
     },
+
+    noDataText() {
+      return this.search
+        ? 'Не найдено элементов, удоволетворяющих условиям поиска'
+        : 'Пользователей пока нет...'
+    },
   },
 
   methods: {
@@ -137,6 +149,7 @@ export default {
       } finally {
         this.selectedUsers = []
         this.editedUser = {}
+        this.search = null
       }
     },
 

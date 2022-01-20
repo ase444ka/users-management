@@ -149,19 +149,21 @@ export default {
     isNewUser: Boolean,
   },
 
+  formData: {
+    lastName: null,
+    firstName: null,
+    patronymicName: null,
+    phone: null,
+    email: null,
+    fileSrc: null,
+    fileName: null,
+  },
+
   data() {
     return {
       loading: false,
       //Данные формы
-      formData: {
-        lastName: null,
-        firstName: null,
-        patronymicName: null,
-        phone: null,
-        email: null,
-        fileSrc: null,
-        fileName: null,
-      },
+      formData: { ...this.$options.formData },
       photo: null,
       otherValidations: [],
       image: false,
@@ -262,7 +264,7 @@ export default {
     },
     cancel() {
       this.image = false
-      this.formData = {}
+      this.formData = { ...this.$options.formData }
       this.$emit('cancel')
     },
     save() {
@@ -292,6 +294,7 @@ export default {
     dialog(value) {
       if (value) {
         this.buildFormDataFromUser()
+        this.photo = null
       }
     },
   },
@@ -309,5 +312,4 @@ export default {
 .avatar {
   cursor: pointer;
 }
-
 </style>
