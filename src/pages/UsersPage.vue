@@ -68,16 +68,21 @@
 </template>
 
 <script>
-import _debounce from 'lodash.debounce'
+import _debounce from 'lodash/debounce'
 import { usersApi } from '@/api'
 import UserCardDialog from '@/components/UserCardDialog'
 import DumpDialog from '@/components/DumpDialog'
+import { mapState } from 'vuex'
+
 export default {
   name: 'UsersPage',
 
   components: { DumpDialog, UserCardDialog },
 
   async created() {
+    if (!this.loggedIn) {
+      this.$router.push('/login')
+    }
     await this.getUsers()
     this.debouncedFilterUsers = _debounce(this.filterUsers, 200)
   },
@@ -94,6 +99,8 @@ export default {
   },
 
   computed: {
+    ...mapState(['loggedIn']),
+
     deleteButtonDisabled() {
       return !this.selectedUsers.length
     },
