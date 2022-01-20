@@ -9,7 +9,8 @@
           >Система управления пользователями</v-toolbar-title
         >
         <v-spacer></v-spacer>
-        <v-btn class="mr-15">Добавить пользователя</v-btn>
+        <portal-target name="addUser"> </portal-target>
+
         <v-btn>Выйти</v-btn>
       </v-container>
     </v-app-bar>

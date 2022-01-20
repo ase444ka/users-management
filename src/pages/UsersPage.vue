@@ -1,5 +1,9 @@
 <template>
   <v-row>
+    <UserCardDialog :dialog="userCardDialog" @cancel="closeUserCardDialog" />
+    <portal to="addUser">
+      <v-btn class="mr-15" @click="addUser">Добавить пользователя</v-btn>
+    </portal>
     <v-col>
       <v-card class="d-flex mt-10 pa-2 light-blue lighten-5" flat>
         <v-btn class="mr-4 mt-4" :disabled="deleteButtonDisabled"
@@ -51,12 +55,16 @@
 
 <script>
 /*import { usersApi } from '@/api'*/
+import UserCardDialog from '@/components/UserCardDialog'
 export default {
   name: 'UsersPage',
+
+  components: { UserCardDialog },
 
   data() {
     return {
       selectedItem: [],
+      userCardDialog: false,
     }
   },
 
@@ -76,6 +84,12 @@ export default {
     },
     toggleSelectAll(event) {
       this.selectedItem = event ? [0, 1, 2, 3, 4, 5] : []
+    },
+    closeUserCardDialog() {
+      this.userCardDialog = false
+    },
+    addUser() {
+      this.userCardDialog = true
     },
   },
 
