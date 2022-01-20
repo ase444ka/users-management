@@ -2,11 +2,15 @@
   <v-row>
     <v-col>
       <v-card class="d-flex mt-10 pa-2 light-blue lighten-5" flat>
-        <v-btn class="mr-4 mt-4">Удалить</v-btn>
-        <v-btn class="mr-4 mt-4">Редактировать</v-btn>
+        <v-btn class="mr-4 mt-4" :disabled="deleteButtonDisabled"
+          >Удалить</v-btn
+        >
+        <v-btn class="mr-4 mt-4" :disabled="editButtonDisabled"
+          >Редактировать</v-btn
+        >
         <v-text-field label="Поиск..." />
         <v-spacer></v-spacer>
-        <v-checkbox></v-checkbox>
+        <v-checkbox @change="toggleSelectAll"></v-checkbox>
       </v-card>
       <v-card>
         <v-list-item-group v-model="selectedItem" color="primary" multiple>
@@ -56,9 +60,22 @@ export default {
     }
   },
 
+  computed: {
+    deleteButtonDisabled() {
+      return !this.selectedItem.length
+    },
+
+    editButtonDisabled() {
+      return this.selectedItem.length !== 1
+    },
+  },
+
   methods: {
     editUser() {
       console.log('edit')
+    },
+    toggleSelectAll(event) {
+      this.selectedItem = event ? [0, 1, 2, 3, 4, 5] : []
     },
   },
 
