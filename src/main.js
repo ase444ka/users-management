@@ -4,7 +4,9 @@ import router from './router'
 import vuetify from '@/plugins/vuetify'
 import VueToastr from '@deveodk/vue-toastr'
 import Vuex from 'vuex'
+import PortalVue from 'portal-vue'
 
+Vue.use(PortalVue)
 Vue.use(Vuex)
 
 import '@deveodk/vue-toastr/dist/@deveodk/vue-toastr.css'
