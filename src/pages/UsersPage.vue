@@ -42,20 +42,16 @@
             class="mdi-border-bottom"
           >
             <template v-slot:default="{ active }">
-              <v-list-item-avatar
-                color="grey darken-1"
-                class="pointer"
-                @click="editUser"
-              >
+              <v-list-item-avatar color="grey darken-1" class="pointer">
                 <img alt="Users logo" :src="require('@/assets/user.jpg')" />
               </v-list-item-avatar>
 
               <v-list-item-content>
-                <v-list-item-title class="pointer" @click="editUser">{{
+                <v-list-item-title class="pointer">{{
                   user.fullName
                 }}</v-list-item-title>
 
-                <v-list-item-subtitle class="pointer" @click="editUser">
+                <v-list-item-subtitle class="pointer">
                   {{ user.email }}
                 </v-list-item-subtitle>
               </v-list-item-content>
@@ -135,8 +131,8 @@ export default {
       } catch (e) {
         this.$toastr('error', 'ошибка загрузки пользователей')
       } finally {
-        console.log('finally')
         this.selectedUsers = []
+        this.editedUser = {}
       }
     },
 
@@ -210,9 +206,6 @@ export default {
   },
 
   watch: {
-    selectedItem(value) {
-      console.log(value)
-    },
     async search(value) {
       await this.debouncedFilterUsers(value)
     },
