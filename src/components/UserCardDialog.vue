@@ -54,12 +54,29 @@
         <v-row>
           <v-col>
             <v-file-input
-              v-model="formData.photo"
+              v-model="photo"
               label="Фотография"
+              :disabled="!!formData.fileName"
               accept="image/*"
               :rules="[rules.required]"
+              @change="setFile"
             />
           </v-col>
+          <v-col cols="12" class="py-0">
+            <v-chip
+              v-if="formData.fileName"
+              class="ma-2"
+              close
+              color="success"
+              text-color="white"
+              @click:close.stop="deleteFile"
+            >
+              {{ formData.fileName }}
+            </v-chip>
+          </v-col>
+        </v-row>
+        <v-row v-if="showImage">
+          <img :src="formData.fileSrc" alt="avatar"/>
         </v-row>
       </v-card-text>
 
@@ -84,6 +101,8 @@
 
 <script>
 import _cloneDeep from 'lodash/cloneDeep'
+const KB = 1024
+const MB = KB * 1024
 export default {
   name: 'UserCard',
 
@@ -103,9 +122,12 @@ export default {
         patronymicName: null,
         phone: null,
         email: null,
-        photo: null,
+        fileSrc: null,
+        fileName: null,
       },
+      photo: null,
       otherValidations: [],
+      showImage: false,
       //валидации
       rules: {
         required: (value) => !!value || 'Обязательное поле',
@@ -148,6 +170,34 @@ export default {
   },
 
   methods: {
+    setFile(event) {
+      console.log(event)
+      if (event.size > MB) {
+        this.$toastr('error', 'размер фото превышает 1 МБ')
+        this.photo = null
+        return
+      }
+      this.formData.fileName = event.name
+      let reader = new FileReader()
+      reader.addEventListener(
+        'load',
+        () => {
+          // convert image file to base64 string
+          this.formData.fileSrc = reader.result
+        },
+        false
+      )
+
+      reader.readAsDataURL(event)
+    },
+    deleteFile() {
+      this.formData.fileSrc = null
+      this.formData.fileName = null
+      this.photo = null
+    },
+    showFile() {
+      this.showImage = true
+    },
     cancel() {
       this.$emit('cancel')
     },
@@ -170,6 +220,7 @@ export default {
     },
     user: {
       deep: true,
+      immediate: true,
       handler(value) {
         this.formData = _cloneDeep(value)
       },

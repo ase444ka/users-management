@@ -43,7 +43,7 @@
           >
             <template v-slot:default="{ active }">
               <v-list-item-avatar color="grey darken-1" class="pointer">
-                <img alt="Users logo" :src="require('@/assets/user.jpg')" />
+                <img alt="Users logo" :src="user.fileSrc" />
               </v-list-item-avatar>
 
               <v-list-item-content>
