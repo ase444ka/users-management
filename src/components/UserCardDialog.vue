@@ -138,7 +138,6 @@
 </template>
 
 <script>
-import _cloneDeep from 'lodash/cloneDeep'
 const KB = 1024
 const MB = KB * 1024
 export default {
@@ -269,6 +268,12 @@ export default {
     save() {
       this.$emit('save', this.formData)
     },
+
+    buildFormDataFromUser() {
+      Object.keys(this.formData).forEach(
+        (key) => (this.formData[key] = this.user[key] || null)
+      )
+    },
   },
 
   watch: {
@@ -286,7 +291,7 @@ export default {
 
     dialog(value) {
       if (value) {
-        this.formData = _cloneDeep(this.user)
+        this.buildFormDataFromUser()
       }
     },
   },
@@ -305,10 +310,4 @@ export default {
   cursor: pointer;
 }
 
-.arrow {
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 30%;
-}
 </style>
