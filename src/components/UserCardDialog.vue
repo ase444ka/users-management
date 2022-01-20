@@ -62,7 +62,7 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="12">
+            <v-col cols="12" sm="6">
               <v-text-field
                 clearable
                 v-model="formData.patronymicName"
@@ -70,6 +70,22 @@
                 :rules="[rules.required, rules.counter]"
                 counter
               />
+            </v-col>
+            <v-col cols="12" sm="6" class="py-0 data-col">
+              <h5 class="date-label" :class="dateLabelErrorOrNot">
+                Дата рождения
+              </h5>
+              <DatePicker
+                class="date-picker"
+                v-model="formData.date"
+                valueType="format"
+                format="DD-MM-YYYY"
+                :class="dateErrorOrNot"
+                @input="dateIsDirty = true"
+              />
+              <div class="date-error" v-if="dateErrorMessage">
+                {{ dateErrorMessage }}
+              </div>
             </v-col>
           </v-row>
           <v-row>
@@ -138,10 +154,16 @@
 </template>
 
 <script>
+import DatePicker from 'vue2-datepicker'
+import 'vue2-datepicker/index.css'
+import 'vue2-datepicker/locale/ru'
+
 const KB = 1024
 const MB = KB * 1024
 export default {
   name: 'UserCard',
+
+  components: { DatePicker },
 
   props: {
     dialog: Boolean,
@@ -150,6 +172,7 @@ export default {
   },
 
   formData: {
+    id: null,
     lastName: null,
     firstName: null,
     patronymicName: null,
@@ -157,6 +180,7 @@ export default {
     email: null,
     fileSrc: null,
     fileName: null,
+    date: null,
   },
 
   data() {
@@ -167,8 +191,8 @@ export default {
       photo: null,
       otherValidations: [],
       image: false,
-      arrow: false,
       //валидации
+      dateIsDirty: false,
       rules: {
         required: (value) => !!value || 'Обязательное поле',
         counter: (value) => value?.length <= 20 || 'Не больше 20 символов',
@@ -177,6 +201,11 @@ export default {
           const pattern =
             /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
           return pattern.test(value) || 'Некорректный e-mail'
+        },
+        date: (value) => {
+          const pattern =
+            /^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/
+          return value ? pattern.test(value) : true
         },
       },
     }
@@ -192,6 +221,27 @@ export default {
         email: this.rules.email(this.formData.email),
         phone: this.rules.phone(this.formData.phone),
       }
+    },
+
+    dateErrorOrNot() {
+      return this.dateErrors.length ? 'date-picker-error' : ''
+    },
+
+    dateLabelErrorOrNot() {
+      return this.dateErrors.length ? 'date-label-error' : ''
+    },
+
+    dateErrorMessage() {
+      const length = this.dateErrors.length
+      return length && this.dateErrors[length - 1]
+    },
+
+    dateErrors() {
+      const errors = []
+      if (!this.dateIsDirty) return errors
+      !this.formData.date && errors.push('Обязательное поле')
+      !this.rules.date(this.formData.date) && errors.push('Некорректная дата')
+      return errors
     },
 
     allFieldsValid() {
@@ -272,9 +322,11 @@ export default {
     },
 
     buildFormDataFromUser() {
-      Object.keys(this.formData).forEach(
-        (key) => (this.formData[key] = this.user[key] || null)
-      )
+      this.dateIsDirty = false
+      Object.keys(this.formData).forEach((key) => {
+        if (this.user[key]) this.dateIsDirty = true
+        return (this.formData[key] = this.user[key] || null)
+      })
     },
   },
 
@@ -311,5 +363,30 @@ export default {
 }
 .avatar {
   cursor: pointer;
+}
+
+.data-col >>> .date-picker {
+  width: 100%;
+}
+
+.date-label {
+  color: rgba(0, 0, 0, 0.6);
+  font-family: Roboto, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: normal;
+}
+
+.data-col {
+  padding-top: 5px;
+}
+
+.data-col >>> .date-picker-error input {
+  border-color: red !important;
+}
+
+.date-error {
+  font-size: 12px;
+  color: red;
 }
 </style>
