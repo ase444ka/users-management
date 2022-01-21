@@ -73,13 +73,13 @@
             </v-col>
             <v-col cols="12" sm="6" class="py-0 data-col">
               <h5 class="date-label" :class="dateLabelErrorOrNot">
-                Дата рождения
+                Дата рождения в формате ДД.ММ.ГГГГ
               </h5>
               <DatePicker
                 class="date-picker"
                 v-model="formData.date"
                 valueType="format"
-                format="DD-MM-YYYY"
+                format="DD.MM.YYYY"
                 :class="dateErrorOrNot"
                 @input="dateIsDirty = true"
               />
