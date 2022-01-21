@@ -172,7 +172,6 @@ export default {
   },
 
   formData: {
-    id: null,
     lastName: null,
     firstName: null,
     patronymicName: null,
@@ -244,17 +243,8 @@ export default {
       return errors
     },
 
-    tt() {
-      return Object.values(this.validations)
-    },
-    dd() {
-      return Object.values(this.formData)
-    },
-
     allFieldsValid() {
-      const allExists = Object.entries(this.formData).every(
-        (entry) => entry[0] === 'id' || entry[1]
-      )
+      const allExists = Object.values(this.formData).every((value) => value)
       const allValid = Object.values(this.validations).every((validation) => {
         return typeof validation === 'boolean'
       })
@@ -336,6 +326,9 @@ export default {
         if (this.user[key]) this.dateIsDirty = true
         return (this.formData[key] = this.user[key] || null)
       })
+      if (this.user.id) {
+        this.$set(this.formData, 'id', this.user.id)
+      }
     },
   },
 
