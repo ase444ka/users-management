@@ -244,8 +244,17 @@ export default {
       return errors
     },
 
+    tt() {
+      return Object.values(this.validations)
+    },
+    dd() {
+      return Object.values(this.formData)
+    },
+
     allFieldsValid() {
-      const allExists = Object.values(this.formData).every((value) => value)
+      const allExists = Object.entries(this.formData).every(
+        (entry) => entry[0] === 'id' || entry[1]
+      )
       const allValid = Object.values(this.validations).every((validation) => {
         return typeof validation === 'boolean'
       })
