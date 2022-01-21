@@ -28,7 +28,6 @@
       <v-card
         class="d-flex mt-10 pa-2 align-end align-sm-start"
         flat
-        v-if="usersAdded"
       >
         <div class="d-flex flex-column flex-sm-row">
           <v-btn
@@ -123,9 +122,6 @@ export default {
       return this.isSmall ? '' : 'Добавить пользователя'
     },
 
-    usersAdded() {
-      return this.users?.length || this.search
-    },
 
     deleteButtonDisabled() {
       return !this.selectedUsers.length
@@ -175,7 +171,6 @@ export default {
       } finally {
         this.selectedUsers = []
         this.editedUser = {}
-        this.search = null
       }
     },
 
