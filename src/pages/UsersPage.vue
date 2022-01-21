@@ -25,10 +25,7 @@
       </v-btn>
     </portal>
     <v-col>
-      <v-card
-        class="d-flex mt-10 pa-2 align-end align-sm-start"
-        flat
-      >
+      <v-card class="d-flex mt-10 pa-2 align-end align-sm-start" flat>
         <div class="d-flex flex-column flex-sm-row">
           <v-btn
             class="mr-4 mt-4"
@@ -121,7 +118,6 @@ export default {
     buttonText() {
       return this.isSmall ? '' : 'Добавить пользователя'
     },
-
 
     deleteButtonDisabled() {
       return !this.selectedUsers.length
@@ -235,9 +231,11 @@ export default {
     async filterUsers(value) {
       await this.getUsers()
       if (value) {
+        const lowerCasedValue = value.toLowerCase()
         this.users = this.users.filter((user) => {
           const checkString = `${user.lastName} ${user.firstName} ${user.patronymicName} ${user.email} ${user.phone}`
-          return checkString.includes(value)
+          const lowerCasedCheckString = checkString.toLowerCase()
+          return lowerCasedCheckString.includes(lowerCasedValue)
         })
       }
     },
