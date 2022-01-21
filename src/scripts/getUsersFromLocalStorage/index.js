@@ -10,7 +10,7 @@ export function getUsersFromLocalStorage() {
     const currentValue = localStorage.getItem(id)
     try {
       const userData = JSON.parse(currentValue)
-      users.push({ id, ...userData })
+      users.push({ ...userData, id })
     } catch (e) {
       console.log('notJSON', id)
     }
